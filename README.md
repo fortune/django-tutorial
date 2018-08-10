@@ -48,13 +48,13 @@ Django プロジェクトの設定ファイルである `settings.py` モジュ�
 (myvenv) $ python manage.py runserver
 ```
 
-こうすると、Django アプリケーションを起動し、そこへアクセスするための localhost の 8000 番ポートを listen する Web サーバがスタートする。ローカルからのアクセスだけでなく、他のホストからのアクセスも受け付けたいなら、
+こうすると、Django アプリケーションを起動し、そこへアクセスするための localhost の 8000 番ポートを listen する Web サーバがスタートする。ローカルからのアクセスだけでなく、他のホストからのアクセスも受け付けたいなら、
 
 ```shell
 (myvenv) $ python manage.py runserver 0:8080
 ```
 
-のようにする。上ではデフォルトの 8000 ポートではなく 8080 を指定した。
+のようにする。上ではデフォルトの 8000 ポートではなく 8080 を指定した。
 
 Django は Web サーバと協調するために `WSGI(Web Server Gateway Interface)` という仕組みを使っており、このインターフェースをサポートする Web サーバが WSGI サーバである。Python 製の WSGI サーバが `gunicorn` であり、これを使うなら、
 
@@ -123,7 +123,7 @@ Web サーバを使わずに Django アプリケーションを実行するこ�
     └── wsgi.py
 ```
 
-作成したアプリケーションは、`polls` という Python パッケージになる。ひとつのプロジェクト内に複数のアプリケーションを作ることもできるし、別のプロジェクトへアプリケーションをもっていくこともできる。
+作成したアプリケーションは、`polls` という Python パッケージになる。ひとつのプロジェクト内に複数のアプリケーションを作ることもできるし、別のプロジェクトへアプリケーションをもっていくこともできる。
 
 以下、`polls` パッケージ中にモジュールを作成することにより、polls アプリケーションを作成していく。
 
@@ -188,7 +188,7 @@ Migrations for 'polls':
     - Add field question to choice
 ```
 
-とする。`polls.migrations` パッケージに `0001_initial` というモジュールができ、そこにマイグレーション情報が出力される。admin 等の共通アプリケーションも同様に `admin.migrations` パッケージ内にマイグレーション情報が定義されたモジュールがあり、以前の `migrate` コマンドではそれらがデータベースに反映されたわけだ。ここでは、`polls` アプリケーションのマイグレーション情報が更新されたので、再度次のように `migrate` コマンドを発行する。
+とする。`polls.migrations` パッケージに `0001_initial` というモジュールができ、そこにマイグレーション情報が出力される。admin 等の共通アプリケーションも同様に `admin.migrations` パッケージ内にマイグレーション情報が定義されたモジュールがあり、以前の `migrate` コマンドではそれらがデータベースに反映されたわけだ。ここでは、`polls` アプリケーションのマイグレーション情報が更新されたので、再度次のように `migrate` コマンドを発行する。
 
 ```shell
 (myvenv) $ python manage.py migrate
@@ -262,7 +262,7 @@ polls
 .....
 ```
 
-そして、View の中ではたとえば次のようにテンプレートを指定する。
+そして、View の中ではたとえば次のようにテンプレートを指定する。
 
 ```python: polls/views.py
 from django.template import loader
@@ -276,7 +276,7 @@ template = loader.get_template('polls/index.html')
 
 ## URLconf の定義
 
-View と URL パターンの対応を URLConf で定義する。`project.urls` モジュールがトップレベルの定義であり、`polls.urls` モジュールに `polls` アプリケーション内での定義を記述する。
+View と URL パターンの対応を URLConf で定義する。`project.urls` モジュールがトップレベルの定義であり、`polls.urls` モジュールに `polls` アプリケーション内での定義を記述する。
 
 ```python: project/urls.py
 # project/urls.py
@@ -322,7 +322,7 @@ reverse('polls:results', args=(question.id,))
 
 ## Form の処理
 
-HTML の Form を直接、自前で処理することもできるが面倒である。そのため Django には
+HTML の Form を直接、自前で処理することもできるが面倒である。そのため Django には
 `django.forms.Form` クラスが用意されている。これは、DRF における `Serializer` クラスに相当する。使い方もほぼ同じだ。
 
 POST Form を使う場合、`Cross Site Request Forgery` を防ぐために、自サイト内を URL に指定した Post フォームには `{%csrf_token %}` テンプレートタグを使う。POST メソッド以外でも PUT や DELETE メソッドなど、unsafe な HTTP リクエストには CSRF トークンがついてくることが必要であり、そうでないと 403 Forbidden エラーとなる。
@@ -369,7 +369,7 @@ def setUpClass(cls):
 
 ## 静的ファイルのデプロイ
 
-静的ファイル、すなわち、CSS や JavaScript、画像ファイルの管理方法は開発時と運用時とでは異なる。
+静的ファイル、すなわち、CSS や JavaScript、画像ファイルの管理方法は開発時と運用時とでは異なる。
 
 ### 開発時
 
