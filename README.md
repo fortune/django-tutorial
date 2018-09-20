@@ -8,7 +8,7 @@ https://docs.djangoproject.com/ja/1.11/intro/
 ``` shell
 $ mkdir django_tutorial
 $ cd django_tutorial
-$ python3 -m venv myvenv	# myvenv という名前で仮想環境を作成
+$ python3 -m venv myvenv	# myvenv という名前で仮想環境を作成
 $ source myvenv/bin/activate	# 仮想環境に入る
 (myvenv) $ pip install django==1.11	# 仮想環境内で Django インストール
 (myvenv) $ django-admin startproject project .
@@ -164,6 +164,7 @@ Running migrations:
 `polls` アプリケーションのためのデータベース定義は、`polls.models` モジュール内に記述する。
 
 [モデル](https://docs.djangoproject.com/ja/1.11/ref/models/)
+
 [モデルフィールドリファレンス](https://docs.djangoproject.com/ja/1.11/ref/models/fields/)
 
 Model の Field に指定するオプションは、データベースレベルで機能するものもあれば、Model レベル、あるいは、フォームや Django Rest Framework の serializer の Validation レベルで機能するものもある。
