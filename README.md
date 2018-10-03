@@ -48,24 +48,32 @@ Django プロジェクトの設定ファイルである `settings.py` モジュ�
 (myvenv) $ python manage.py runserver
 ```
 
-こうすると、Django アプリケーションを起動し、そこへアクセスするための localhost の 8000 番ポートを listen する Web サーバがスタートする。ローカルからのアクセスだけでなく、他のホストからのアクセスも受け付けたいなら、
+こうすると、localhost の 8000 番ポートを listen する 簡易 Web サーバがスタートし、その中で Django を初期化し、後述の URLConf や View の定義に
+したがい、リクエストの URL パターンに合う適切な View 関数を呼び出して、レスポンスを返す。ここではまだ URLConf の定義をしていないので
+単に挨拶が返されるだけだ。ローカルからのアクセスだけでなく、他のホストからのアクセスも受け付けたいなら、
 
 ```shell
-(myvenv) $ python manage.py runserver 0:8080
+(myvenv) $ python manage.py runserver 0.0.0.0:8080
 ```
 
 のようにする。上ではデフォルトの 8000 ポートではなく 8080 を指定した。
 
-Django は Web サーバと協調するために `WSGI(Web Server Gateway Interface)` という仕組みを使っており、このインターフェースをサポートする Web サーバが WSGI サーバである。Python 製の WSGI サーバが `gunicorn` であり、これを使うなら、
+Django に付属の簡易 Web サーバ以外でも Django アプリを実行するためには、それら Web サーバが Django に対応していなくてはならないが、それだと
+使える Web サーバが限られてくるので、Web サーバと、Django のような Web アプリケーションとの共通インターフェースを Python で定義したのが
+`WSGI(Web Server Gateway Interface)` である。Django は WSGI をサポートしているので、WSGI をサポートする Web サーバ（WSGI サーバ or
+WSGI アプリケーションコンテナ）なら Django を使うことができる。Python 製の WSGI サーバが `gunicorn` であり、これを使うなら、
 
 ```shell
 (myvenv) $ pip install gunicorn
 (myvenv) $ gunicorn project.wsgi
 ```
 
-まず `gnicorn` をインストールし、`project.wsgi` モジュールをエントリポイントとして指定している。
+とすればいい。デフォルトで 8000 番ポートが使われる。まず `gnicorn` をインストールし、`project.wsgi` モジュールをエントリポイントとして指定している。WSGI サーバである gunicorn は
+`project.wsgi` モジュールを使って Django アプリケーションを WSGI アプリケーションに変換し、それにより、WSGI に則って Django と通信する。
 
-`Apache` や `Nginx` 等の Web サーバと Django アプリケーションを連携させる場合、Apache なら `mod_wsgi` , Nginx なら `uWSGI` 利用して、設定・デプロイする。
+gunicorn 以外にも `uWSGI` 等がある。
+
+`Apache` や `Nginx` 等の WSGI サーバでない Web サーバと Django アプリケーションを連携させる場合、`gunicorn` や `uWSGI` と連携させることになる。
 
 [Django をデプロイする](https://docs.djangoproject.com/ja/1.11/howto/deployment/)
 
