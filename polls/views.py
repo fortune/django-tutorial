@@ -4,6 +4,8 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 
+from django.views.decorators.csrf import csrf_exempt
+
 from .models import Question, Choice
 
 
@@ -35,7 +37,7 @@ def results(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     return render(request, 'polls/results.html', {'question': question})
 
-
+#@csrf_exempt
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:

@@ -230,6 +230,14 @@ admin.site.register(Choice)
 ```
 
 
+管理者のパスワードを忘れてしまった場合、次のようにして管理者パスワードを変更してやればいい。
+管理者のユーザ名を admin とする。
+
+```shell
+(myvenv) $ python manage.py changepassword admin
+```
+
+
 ## View の定義
 
 View は、`HttpRequest` オブジェクトを処理して、`HttpResponse` オブジェクトを返すか、`Http404` のような例外をスローする。これらを `polls.views` モジュール中に定義する。
@@ -334,9 +342,97 @@ reverse('polls:results', args=(question.id,))
 HTML の Form を直接、自前で処理することもできるが面倒である。そのため Django には
 `django.forms.Form` クラスが用意されている。これは、DRF における `Serializer` クラスに相当する。使い方もほぼ同じだ。
 
-POST Form を使う場合、`Cross Site Request Forgery` を防ぐために、自サイト内を URL に指定した Post フォームには `{%csrf_token %}` テンプレートタグを使う。POST メソッド以外でも PUT や DELETE メソッドなど、unsafe な HTTP リクエストには CSRF トークンがついてくることが必要であり、そうでないと 403 Forbidden エラーとなる。
+POST Form を使う場合、`Cross Site Request Forgery` を防ぐために、自サイト内を URL に指定した Post フォームには
+`{%csrf_token %}` テンプレートタグを使う。POST 以外でも PUT や DELETE メソッドなど、unsafe な HTTP リクエストには
+CSRF トークンがついてくることが必要であり、そうでないと 403 Forbidden エラーとなる。
 
 [クロスサイトリクエストフォージェリ（CSRF）対策](https://docs.djangoproject.com/ja/1.11/ref/csrf/)
+
+
+
+## CSRF の実験
+
+`{%csrf_token %}` テンプレートタグを指定したフォームのページを `curl` コマンドでリクエストすると次のようになる。
+
+```shell
+$ curl -v "http://localhost:8000/polls/1/"
+*   Trying ::1...
+* TCP_NODELAY set
+* Connection failed
+* connect to ::1 port 8000 failed: Connection refused
+*   Trying fe80::1...
+* TCP_NODELAY set
+* Connection failed
+* connect to fe80::1 port 8000 failed: Connection refused
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 8000 (#0)
+> GET /polls/1/ HTTP/1.1
+> Host: localhost:8000
+> User-Agent: curl/7.54.0
+> Accept: */*
+> 
+* HTTP 1.0, assume close after body
+< HTTP/1.0 200 OK
+< Date: Fri, 12 Oct 2018 08:59:11 GMT
+< Server: WSGIServer/0.2 CPython/3.6.1
+< Content-Type: text/html; charset=utf-8
+< X-Frame-Options: SAMEORIGIN
+< Vary: Cookie
+< Content-Length: 486
+< Set-Cookie:  csrftoken=MKUH7A4hVbB7623WptyZtrgT6NaldvVP7WsNApRr5joTfgbHOETyVauD04jwZrtK; expires=Fri, 11-Oct-2019 08:59:11 GMT; Max-Age=31449600; Path=/
+< 
+<h1>東京オリンピックに賛成？</h1>
+
+<form action="/polls/1/vote/" method="post">
+<input type='hidden' name='csrfmiddlewaretoken' value='3asxNHGbsUsMbGQq5BZiU8zaEHlmCntdom0DgwtlC2fykUYbuMkRmRNUyYuxoj18' />
+
+    <input type="radio" name="choice" id="choice1" value="1" />
+    <label for="choice1">賛成</label><br />
+
+    <input type="radio" name="choice" id="choice2" value="2" />
+    <label for="choice2">反対</label><br />
+
+<input type="submit" value="Vote" />
+</form>
+* Closing connection 0
+```
+
+レスポンスの `Set-Cookie` ヘッダで `csrftoken` の値を指定し、FORM には `csrfmiddlewaretoken` の値が hidden フィールドとして
+セットされている。これにより、FORM をサブミットすると、次の `curl` コマンドで実行した場合と同様のリクエストが送信される。
+
+```shell
+$ curl -X POST "http://localhost:8000/polls/1/vote/" \
+>     -H "Content-Type: application/x-www-form-urlencoded" \
+>     -H "Cookie: csrftoken=MKUH7A4hVbB7623WptyZtrgT6NaldvVP7WsNApRr5joTfgbHOETyVauD04jwZrtK" \
+>     -d "csrfmiddlewaretoken=3asxNHGbsUsMbGQq5BZiU8zaEHlmCntdom0DgwtlC2fykUYbuMkRmRNUyYuxoj18&choice=2"
+```
+
+`csrftoken` クッキー、または `csrfmiddlewaretoken` フィールドがなかったり、間違っている場合には 403 Forbidden エラーが返る。
+
+
+CSRF チェックを無効にしたい場合、CSRF チェックを必要とする unsafe な HTTP メソッドを処理する View 関数に
+`django.views.decorators.csrf.csrf_exempt` をデコレータとしてつけてやればよい。そうすると、CSRF トークンをリクエストに
+つけなくても成功するようになる。
+
+
+
+## Django Rest Framework での CSRF
+
+DRF の管理下にある HTTP メソッドの場合、通常の Django の CSRF チェックとは少々異なっている。DRF 管理下では
+CSRF チェックは次のようにおこなわれる。
+
+- GET 等の safe メソッドならば、通常の Django 同様に CSRF チェックはおこなわれない。
+- unsafe メソッドでも、認証をかけていないリクエストであるなら、CSRF チェックはなされない。
+- unsafe メソッド、かつ認証をかけていないリクエストでも、ログイン済みのリクエストである場合、すなわち、Cokkie ヘッダに有効な `sessionid` が入ってしまっていると
+  CSRF チェックが働く。
+- unsafe メソッドで認証をかけているリクエストの場合、`SessionAuthentication` ならば CSRF チェックが働くが、`TokenAuthentication` ならば CSRF チェックは
+ 働かない。
+
+
+[Authentication and CSRF Protection in Django Rest Framework](http://kylebebak.github.io/post/django-rest-framework-auth-csrf)
+
+
 
 
 ## 自動テストのやり方
