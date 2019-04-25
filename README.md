@@ -262,7 +262,7 @@ https://docs.djangoproject.com/ja/1.11/ref/views/#error-views
 
 ## Template の定義
 
-`project.settings` モジュールの `TEMPLATES` 項目にテンプレートのロード、レンダリングの方法が定義されている。デフォルトでは、`INSTALLED` に定義されているアプリケーションの `templates` ディレクトリを順に検索していき、最初に見つかったテンプレートを使用する。
+`project.settings` モジュールの `TEMPLATES` 項目にテンプレートのロード、レンダリングの方法が定義されている。デフォルトでは、`INSTALLED_APPS` に定義されているアプリケーションの `templates` ディレクトリを順に検索していき、最初に見つかったテンプレートを使用する（**'APP_DIRS': True**）。
 
 そこで、`polls` パッケージ配下に次のように３つの template を作成する。
 
@@ -288,6 +288,15 @@ template = loader.get_template('polls/index.html')
 ```
 
 `templates` ディレクトリの下に直接テンプレートファイルを置かずに名前空間を polls というアプリケーションと同じ名前で与えている。
+
+
+`project.settings` モジュールの `TEMPLATES` 項目の `DIRS` にテンプレートを検索するディレクトリのリストを指定できる。たとえば、次のようにすると、
+
+```python
+'DIRS': [os.path.join(BASE_DIR, 'templates')],
+```
+
+プロジェクトルート直下の `templates` ディレクトリを検索対象にする。複数のアプリケーションのテンプレートから継承されたりインクルードされるテンプレートはここに置いておくとよい。
 
 
 
@@ -340,7 +349,16 @@ reverse('polls:results', args=(question.id,))
 ## Form の処理
 
 HTML の Form を直接、自前で処理することもできるが面倒である。そのため Django には
-`django.forms.Form` クラスが用意されている。これは、DRF における `Serializer` クラスに相当する。使い方もほぼ同じだ。
+`django.forms.Form` クラスが用意されている。これは、Model における `django.db.models.Model` クラスに相当する。
+Model と同じように `django.forms.Form` クラスを継承し、`django.forms.fields.Field` クラスのサブクラスとして提供されている
+`CharField` や `IntegerField` 型のクラス変数を定義する。これらのクラス変数が HTML FORM 中の各フィールドに相当し、
+変数名がフィールドの name 属性と対応する。
+
+HTML フォームを `django.forms.Form` のオブジェクトとして処理することにより、型変換や妥当性検証やエラーメッセージの
+保存などを Form オブエジェクト内にカプセル化することができる。
+
+[フォームを使う](https://docs.djangoproject.com/ja/1.11/topics/forms/)
+
 
 POST Form を使う場合、`Cross Site Request Forgery` を防ぐために、自サイト内を URL に指定した Post フォームには
 `{%csrf_token %}` テンプレートタグを使う。POST 以外でも PUT や DELETE メソッドなど、unsafe な HTTP リクエストには
