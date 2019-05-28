@@ -251,13 +251,21 @@ View は Python のクラスであり、これは主に汎用 View として使�
 
 View を定義するとき、サポートする URL パターンと一緒にどういう View を作成するかを決め、実装する。その後で、View と URL の対応を URLconf に定義するだろう。
 
-View から例外がスローされたとき、`project.settings` の `DEBUG` が `True` なら URLConf 情報等のデバッグ情報がクライアントに返される。`False` ならば、例外に応じた Django 標準の簡単なエラーページが返されるが、`templates` の直下に `404.html` や `500.html` 等のテンプレートファイルを置いておくと、それが使用される。
+View から例外がスローされると、URL ディスパッチャ（WSGI ハンドラ）まで伝搬し、そこで、`project.settings` の `DEBUG` が `True` なら、例外の種類に応じて、URLConf 情報やスタックトレース等のデバッグ情報がクライアントに返される。`False` ならば、例外に応じた Django 標準の `Error View` が実行され、それが返す `HttpResponse` オブジェクトがレスポンス生成に使用される。デフォルトの `Error View` を自前の View で置き換えるよう設定することができるし、デフォルトの `Error View` が使用するテンプレートを置き換えるだけなら、`templates` の直下に `404.html` や `500.html` 等のテンプレートファイルを置いておけばそれが使用される。
 
+
+https://docs.djangoproject.com/ja/1.11/ref/views/#error-views
 https://docs.djangoproject.com/ja/1.11/topics/http/views/#returning-errors
 https://docs.djangoproject.com/ja/1.11/topics/http/views/#the-http404-exception
 https://docs.djangoproject.com/ja/1.11/topics/http/views/#customizing-error-views
 https://docs.djangoproject.com/ja/1.11/ref/views/#error-views
 
+
+WSGI ハンドラは、例外の性質に応じて（5XX 番のエラーレスポンスを生成するか、4XX 番か、など）ロギングする。その場合、ロギングの設定にしたがう。
+
+https://docs.djangoproject.com/ja/2.2/topics/logging/#django-s-logging-extensions
+
+[Django でのロギング設定](https://gist.github.com/fortune/9cfa6f0cb4878b63e5027d8ecba6e966#django-%E3%81%A7%E3%81%AE%E3%83%AD%E3%82%AE%E3%83%B3%E3%82%B0%E8%A8%AD%E5%AE%9A)
 
 
 ## Template の定義
